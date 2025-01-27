@@ -1,5 +1,4 @@
 const express = require("express");
-// const Workout = require("../models/workoutModel")
 const {
   createWorkout,
   getAllWorkouts,
@@ -10,19 +9,21 @@ const {
 
 const router = express.Router();
 
-// Get all workouts
-router.get("/", getAllWorkouts);
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+  if (!req.oidc.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  next();
+};
 
-// Get a single workout
-router.get("/:id", getWorkout);
+// Public routes (no authentication required)
+router.get("/", getAllWorkouts);         // Get all workouts
+router.get("/:id", getWorkout);          // Get single workout
 
-// get a new workout
-router.post("/", createWorkout);
-
-// delete a workout
-router.delete("/:id", deleteWorkout);
-
-// update a workout
-router.patch("/:id", updateWorkout);
+// Protected routes (authentication required)
+router.post("/", requireAuth, createWorkout);        // Create workout
+router.delete("/:id", requireAuth, deleteWorkout);   // Delete workout
+router.patch("/:id", requireAuth, updateWorkout);    // Update workout
 
 module.exports = router;

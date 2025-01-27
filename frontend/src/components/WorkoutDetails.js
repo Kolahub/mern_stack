@@ -8,8 +8,12 @@ const WorkoutDetails = ({ workout }) => {
 
   const handleClick = async () => {
     const response = await fetch('/api/workouts/' + workout._id, {
-      method: 'DELETE'
-    })
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    
     const json = await response.json()
 
     if (response.ok) {

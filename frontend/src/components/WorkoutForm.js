@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useWorkoutsContext } from '../hooks/useWorkoutsContext'
+import { useAuth0 } from '@auth0/auth0-react'
 
 const WorkoutForm = () => {
   const { dispatch } = useWorkoutsContext()
@@ -10,34 +11,70 @@ const WorkoutForm = () => {
   const [error, setError] = useState(null)
   const [emptyFields, setEmptyFields] = useState([])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const { user } = useAuth0();
 
-    const workout = {title, load, reps}
-    
-    const response = await fetch('/api/workout', {
-      method: 'POST',
-      body: JSON.stringify(workout),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    const json = await response.json()
+const handleSubmit = async (e) => {
+  e.preventDefault()
 
-    if (!response.ok) {
-      setError(json.error)
-      setEmptyFields(json.emptyFields)
+  const workout = {
+    title, 
+    load, 
+    reps,
+    user: user.sub // Add Auth0 user ID
+  };
+
+  const response = await fetch('/api/workout', {
+    method: 'POST',
+    body: JSON.stringify(workout),
+    headers: {
+      'Content-Type': 'application/json'
     }
-    if (response.ok) {
-      setEmptyFields([])
-      setError(null)
-      setTitle('')
-      setLoad('')
-      setReps('')
-      dispatch({type: 'CREATE_WORKOUT', payload: json})
-    }
+  })
+  const json = await response.json()
 
+  if (!response.ok) {
+    setError(json.error)
+    setEmptyFields(json.emptyFields)
   }
+  if (response.ok) {
+    setEmptyFields([])
+    setError(null)
+    setTitle('')
+    setLoad('')
+    setReps('')
+    dispatch({type: 'CREATE_WORKOUT', payload: json})
+  }
+
+}
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault()
+
+  //   const workout = {title, load, reps}
+    
+  //   const response = await fetch('/api/workout', {
+  //     method: 'POST',
+  //     body: JSON.stringify(workout),
+  //     headers: {
+  //       'Content-Type': 'application/json'
+  //     }
+  //   })
+  //   const json = await response.json()
+
+  //   if (!response.ok) {
+  //     setError(json.error)
+  //     setEmptyFields(json.emptyFields)
+  //   }
+  //   if (response.ok) {
+  //     setEmptyFields([])
+  //     setError(null)
+  //     setTitle('')
+  //     setLoad('')
+  //     setReps('')
+  //     dispatch({type: 'CREATE_WORKOUT', payload: json})
+  //   }
+
+  // }
 
   return (
     <form className="create" onSubmit={handleSubmit}> 
